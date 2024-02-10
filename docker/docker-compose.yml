@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  crm-app:
+    image: djangocrm:1
+    container_name: crm-app
+    environment:
+      - DBNAME=crm
+      - DBUSER=crm
+      - DBPASSWORD=crm
+      - DBHOST=crm-db
+      - DBPORT=5432
+
+      - SECRET_KEY=kfd83a9$$mw#cj9@v9)ym!--1ksxz$$=+e$$+jlnj^ou10whke!l^
+      - ENV_TYPE=dev
+    depends_on:
+      - crm-db
+    ports:
+      - 80:80
+    networks:
+      - nw
+
+  crm-db:
+    image: postgres:latest
+    container_name: crm-db
+    environment:
+      - POSTGRES_DB=crm
+      - POSTGRES_USER=crm
+      - POSTGRES_PASSWORD=crm
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/run/postgresql/:/var/run/postgresql
+    networks:
+      - nw
+
+networks:
+  nw: {}

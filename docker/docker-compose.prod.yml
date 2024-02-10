@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+
+  crm-app:
+    image: djangocrm:1
+    container_name: crm-app
+    command: gunicorn crm.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    environment:
+      - DBNAME=crm
+      - DBUSER=crm
+      - DBPASSWORD=crm
+      - DBHOST=crm-db
+      - DBPORT=5432
+
+      - SECRET_KEY=kfd83a9$$mw#cj9@v9)ym!--1ksxz$$=+e$$+jlnj^ou10whke!l^
+      - ENV_TYPE=dev
+    depends_on:
+      - crm-db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - 8000:8000
+    networks:
+      - nw
+
+  crm-db:
+    image: postgres:latest
+    container_name: crm-db
+    environment:
+      - POSTGRES_DB=crm
+      - POSTGRES_USER=crm
+      - POSTGRES_PASSWORD=crm
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/run/postgresql/:/var/run/postgresql
+    networks:
+      - nw
+  
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    ports:
+      - 1337:80
+    depends_on:
+      - crm-app
+    networks:
+      - nw
+
+volumes:
+  postgres_data:
+  static_volume:
+  
+networks:
+  nw: {}
